@@ -1,8 +1,12 @@
 What you learnt outside the class?
-Be specific...
 
-Week1
+Week 1
 
-#1 I read the paper "X" and I learnt that software engineering is multi-disciplinary subject
-#2 I discussed with Krishna about design of software and we debated on different facets of software enigneering.
-Is it art, science or what?
+#1 This was the first time I realized that not only so many languages like haskell,rust,swift,go,etc. exist but also that they are equally 
+widely used as C,C++ and Java.
+#2 Realized that coding is not all that you have to do being a CSE UG and was amazed by the wide scope of computer science as a discipline
+when I looked at the Turing award articles.
+#3 Spent some time learning 'Haskell' as a new functional programming language. Learnt about basic lists, tuples, recursion, datatypes and 
+functions in Haskell. Realized the fact that Haskell is 'lazy' languauge wherein we can define infinite lists unlike C,C++ which is not 
+actually created until you ask haskell for a result. 
+#4 Read first two chapters from the book 'Learn You a Haskell for Great Good!'.
