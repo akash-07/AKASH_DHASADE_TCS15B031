@@ -1,0 +1,14 @@
+Language: Haskell
+
+Q.1) Finding the limit of recursion
+
+import Debug.Trace
+ 
+recurse :: Int->Int
+recurse n  = trace((show n)++"\n") recurse(n+1)
+
+Q.2) Hello World (Had been implemented before me)
+
+message :: String
+message = "Hello world!"
+main = putStrLn message
