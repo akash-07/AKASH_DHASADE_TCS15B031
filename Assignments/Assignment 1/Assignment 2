@@ -1,6 +1,6 @@
 Language: Haskell
 
-Q.1) Finding the limit of recursion
+Q.1) Finding the limit of recursion(Unimplemented)
 
 import Debug.Trace
  
@@ -12,3 +12,59 @@ Q.2) Hello World (Had been implemented before me)
 message :: String
 message = "Hello world!"
 main = putStrLn message
+
+Q.3) Task (Unimplemented)
+Demonstrate the methods available for declaring prototypes within the language. The provided solutions should include:
+
+An explanation of any placement restrictions for prototype declarations
+A prototype declaration for a function that does not require arguments
+A prototype declaration for a function that requires two arguments
+A prototype declaration for a function that utilizes varargs
+A prototype declaration for a function that utilizes optional arguments
+A prototype declaration for a function that utilizes named parameters
+Example of prototype declarations for subroutines or procedures (if these differ from functions)
+An explanation and example of any special forms of prototyping not covered by the above
+
+Languages that do not provide function prototyping facilities should be omitted from this task. 
+
+My code :-
+
+A function can be declared without giving it's prototype in Haskell. The haskell compiler has got type inference whereby it can infer the return type and type of variable given to function. 
+You can still hardcode the prototype which specifies the datatype of variables and return type. For ex. Consider a function add which takes two integers and returns their sum. It can be prototyped and declared as :
+
+ 
+add :: Int -> Int -> Int
+add x y = x+y
+ 
+Actually all functions in haskell are functions with just one arguments. Haskell will treat above function as a function which takes an int and returns a function with type (:: (Int->Int)) . 
+Then this function which is returned is such that it takes an int and returns an int. Similarly for any function add which takes 3 integers and adds them the actual prototype will be as follows:
+
+ 
+add :: Int->(Int ->(Int->Int))
+ 
+The one that does not require arguements could just be:
+
+ 
+printThis = putStrLn("This is being printed.")
+ 
+But haskell would rather consider the function to be of return type IO() in this case.
+
+Two arguments:
+
+ 
+add :: Int -> Int -> Int
+add x y = x+y
+ 
+The same thing can be done using the lambda function as :
+
+ 
+add :: Int -> Int -> Int
+add = \x->\y -> x+y
+ 
+Two arguments with unnamed parameters:
+
+ 
+doThis :: Int-> Int-> String
+doThis _ _  = "Function with unnamed parameters"
+ 
+Function with var args requires creation of type class as per the requirement.
