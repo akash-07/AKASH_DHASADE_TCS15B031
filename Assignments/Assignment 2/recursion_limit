@@ -1,0 +1,6 @@
+Task : Finding the limit of recursion (Unimplemented)
+
+import Debug.Trace
+ 
+recurse :: Int->Int
+recurse n  = trace((show n)++"\n") recurse(n+1) 
