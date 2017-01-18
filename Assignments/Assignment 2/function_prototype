@@ -14,15 +14,18 @@ Languages that do not provide function prototyping facilities should be omitted 
 
 My code :-
 
-A function can be declared without giving it's prototype in Haskell. The haskell compiler has got type inference whereby it can infer the return type and type of variable given to function. 
-You can still hardcode the prototype which specifies the datatype of variables and return type. For ex. Consider a function add which takes two integers and returns their sum. It can be prototyped and declared as :
+A function can be declared without giving it's prototype in Haskell. The haskell compiler has got type inference whereby it can infer the
+return type and type of variable given to function. 
+You can still hardcode the prototype which specifies the datatype of variables and return type. For ex. Consider a function add which 
+takes two integers and returns their sum. It can be prototyped and declared as :
 
- 
 add :: Int -> Int -> Int
 add x y = x+y
  
-Actually all functions in haskell are functions with just one arguments. Haskell will treat above function as a function which takes an int and returns a function with type (:: (Int->Int)) . 
-Then this function which is returned is such that it takes an int and returns an int. Similarly for any function add which takes 3 integers and adds them the actual prototype will be as follows:
+Actually all functions in haskell are functions with just one arguments. Haskell will treat above function as a function which takes an 
+int and returns a function with type (:: (Int->Int)) . 
+Then this function which is returned is such that it takes an int and returns an int. Similarly for any function add which takes 3 
+integers and adds them the actual prototype will be as follows:
 
  
 add :: Int->(Int ->(Int->Int))
@@ -53,5 +56,3 @@ doThis :: Int-> Int-> String
 doThis _ _  = "Function with unnamed parameters"
  
 Function with var args requires creation of type class as per the requirement.
-Contact GitHub API Training Shop Blog About
-© 2017 GitHub, Inc. Terms Privacy Security Status Help
