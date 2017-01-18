@@ -1,0 +1,34 @@
+Task: (Unimplemented)
+Explain or demonstrate the levels of visibility of function names and labels within the language.
+
+Functions are considered global in haskell and can be referenced in the sections of code appearing before the function definition. 
+The following code illustrates the same. add2 was declared after add3 and used in add3. The variables x,y and z are local to the function.
+
+add3 :: Int -> Int-> Int-> Int
+add3 x y z = add2 x y + z
+ 
+add2 :: Int -> Int -> Int
+add2 x y = x + y
+ 
+main :: putStrLn(show (add3 5 6 5))
+ 
+Output:
+ghci>main
+16
+
+In the function below the functions g and h are local to the function getSquaredSum. They cannot be called from anywhere outside the 
+function.
+
+getSquaredSum :: Int-> Int-> Int
+getSquaredSum x y = g x + h y
+	where
+	g a = a*a
+	h b = b*b
+ 
+Output:
+ 
+ghci> getSquaredSum 3 4
+25
+ghci>h 4
+<interactive>: 115:1:error: 
+Variable not in scope: h :: Integer -> t
