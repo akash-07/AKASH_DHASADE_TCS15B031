@@ -1,0 +1,145 @@
+**Work In Progress**
+**I couldn't put it on overleaf Sir**
+**Will do soon**
+
+Haskell says,"I can help you with parsers!"
+Parsing in Haskell
+
+Akash Dhasade 
+Indian Institute Of Technology, Tirupati
+
+1.Introduction
+
+This paper is a tutorial on defining recursive descent parsers in haskell without the usage of monads. Writing parsers is a tiresome and lenghty but the power of functional languages makes it easy to write simple parsers. 
+The paper is targeted at an undergraduate student who knows basics of functional programmming. Since this tutorial does not use monads to write parsers, the reader is not expected to know anything about monads.
+Better parsers can be witten with the help of monadic programming style. The paper, "Functional Pearls"	(Graham Hutton; Erik Meijer) is based on same. The module derived from this paper is available on the web:
+
+---------------link----------------------
+
+2. A type for parsers
+
+The most important thing in writing in parsers is nothing but deciding the type of parser. Can it be a function which just returns the parsed value? It cannot be, because we need to apply parsers sequentially on string of tokens, so we need a mechanism by which we would come to know the remaining portion of input to be parsed. Also the grammars can be ambiguous so there might be more than one ways of parsing the strings. We need to look for all possibilities. So the parser must return a list of all possible parses. Considering the above facts, we define the type "parser" as
+
+type token :: String
+type parser a :: [token] -> [(a,[token])]   
+
+Here "token" is just an alias for "String" type. The parser for values of type "a" is nothing but a function which takes in a list of tokens and returns a list of all possible parses. Each possible parse is a tuple "[(a,[token])]" where the first element in the tuple is the parsed value of type "a" and second element is the remaining list of tokens to be parsed. The conversion of input program string into a list of tokens in discussed in the section --. 
+
+3. Basic tools for parsing
+
+A]	We will follow the general approach of functional programming here that is try and build bigger parser by gluing together smaller parsers. The first and most basic parser is:
+
+pLit::String -> Parser String
+pLit str [] = []
+pLit str (tok:toks) = if tok == str then [tok,toks] else [] 
+
+pLit looks at the first token in the list, if it matches the string then it returns a singleton list with that string as the parsed value along with remaining list. If it fails to match then it returns an empty list indicating failure. This is fairly simple stuff considering the pattern matching abilities of haskell.
+
+B] Consider the production rule:
+arithop -> + | - | / | *
+
+In most cases like this we come across the need to check for more than one possible literals on the same input list of tokens. So we define a simple parser combinator which takes care of these cases.
+
+pALt :: Parser a -> Parser a -> Parser a
+pAlt p1 p2 toks = (p1 toks) ++ (p2 toks)
+
+Alt stands for alternatives that is p1 or p2. It resembles the symbol '|' in BNF grammar production rules. So pAlt just tries parser p1 and parser p2 on the same input and appends the list of results returned by p2 to list returned by p1.
+
+Example - The above production rule can be realised by writing
+pArithop :: Parser String
+pArithop = (pLit "+") `pAlt` (pLit "-") `pAlt` (pLit "*") `pAlt` (pLit "/")
+where we repeatedly use pAlt in the infix form.
+
+C] We need one more parser combinator which works as follows: It first uses parser p1 on the input and then uses parser p2 on the remaining list of tokens returned by p1. This is sequential parsing where we test for p1 first then p2. But then we need to combine the result of p1 and p2, so we try and make this combinator more generic by supplying the combining function as the arguement which simply combines the results of p1 and p2. The definiton can be written using list comprehension as
+
+pThen :: (a->b->c) -> parser a -> parser b -> parser c
+pThen combine p1 p2 toks 
+= [(combine v1 v2,toks2) | (v1,toks1)<-p1 toks , (v2,toks2) <- p2 toks1]
+
+(v1 toks1) is an element from the list of results returned by p1 toks. For all such elements we again apply p2 on toks1 and (v2 toks2) is drawn from the list p2 toks1. Finally we get a list of pairs (combine v1 v2,toks2) where combine effectively combines the values v1 and v2 returned by p1 and p2 respectively.
+An example in the end would make it more clear.
+
+So far we have defined two parser combinators pAlt and pThen apart from pLit. We look to sharpen the tools in the next section.
+
+4. Next level of parser combinators
+
+A] We move on to next level by defining a few more parser combinators. We extend pThen to pThen3 and pThen4. It is evident from the names what pThen3 and pThen4 would do. The simple definition of pThen3 would go as:
+
+pThen3 :: (a->b->c->d)->parser a->parser b->parser c->parser d
+pThen3 combine p1 p2 p3 toks = 
+[(combine v1 v2 v3,toks3) | (v1,toks1)<-p1 toks , (v2,toks2) <- p2 toks1 , (v3,toks3) <- p3 toks2]
+
+It first uses p1, then p2 and then p3 in a sequential manner. Similarly one can define pThen4. The most important thing is that the combining function takes care of the way you want to put the result of successful subsequent parses.
+
+B] Grammars have another important feature wherein there are one or more repetitions of a particular symbol. Let's see how we can define parsers for such symbols. First of all what should the function return? It is easy to conclude that the function should return a list of values returned by successive uses of that parser. So here goes the type definiton of the function:
+
+pOneOrMore :: parser a -> parser [a]
+
+So pOneOrMore takes in a parser p as input and returns a parser that checks for one or more occurences of p. Good enough? Can we similarly write pZeroOrMore? Yes, as you might have guessed it checks for zero or more occurences of the p. Interestingly we can write pOneOrMore and pZeroOrMore in terms of each other. Let's explore how. Before we do that just consider 
+
+pEmpty :: a -> parser a
+
+The type definition might look a bit weird at first sight but believe me it's deceivingly easy. pEmpty always succeeds by removing nothing from input and returning the value given as the first arguement. Here is how we write it :
+
+pEmpty a = \toks -> [(a,toks)]
+
+Okay, so coming back to pZeroOrMore, can we write it in terms of pOneOrMore and pEmpty? Check this out:
+
+pZeroOrMore p = (pOneOrMore p) `pAlt` (pEmpty [])
+
+Remember pAlt we defined earlier? That's how it comes in handy. When we check for zero or more occurences of something we are actually checking none or one or more occurences of the same. This is what is exactly caputured by definition of pZeroOrMore. Now we write pZeroOrMore as
+
+pOneOrMore p1 = pThen combine p1 (pZeroOrMore p1)
+
+Allright, let's just try to figure out what the combining function must be in this case. What are we exactly trying to combine? From the definition of pThen it is clear that we are trying to combine the values returned by input parsers p1 and p2. Observe that p2 is nothing but list of values returned by succesive uses of p1, isn't it? So combine is essentially something that can prepend a value to the list consisting of values of same type. Yes, combine is simply the list constructor (:) that you, me and everyone knows and loves! (:) is essentially the prefix form of the same operator.
+
+pOneOrMore p1 = pThen (:) p1 (pZeroOrMore)      
+
+C]  In some cases the grammar takes and interesting form. Look at this production rule,
+
+program -> sc1 ; sc2 ; sc3 ; .... ; scn
+
+The program is a set of supercombinator definitions separated with semicolons. Essentially there are one or more occurences of supercombinators except for the fact that there are semicolons in between. Can we modify our function pOneOrMore and pZeroOrMore to accomodate these separators? Look at this,
+
+pOneOrMoreWithSep :: parser a -> parser b -> parser [a] 
+pOneOrMoreWithSep p1 pSep = 
+pThen3 combine p1 pSep (pZeroOrMoreWithSep p1 pSep) 
+
+You can figure out what the combining function must do in this case wherein we can just ignore the value returned by pSep. Then here goes pZeroOrMoreWithSep,
+
+pZeroOrMoreWithSep p1 pSep = 
+(pOneOrMoreWithSep p1 pSep) `pALt` (pEmpty [])
+
+The type of pZeroOrMoreWithSep is same as pOneOrMoreWithSep.
+
+D] Variables are the most crucial part of any program. We need to parse them correctly ensuring that we do not treat keywords as variables. Conceptually pLit and pVar are quite same. Both test for some property of first token and they fail or succeed depending on whether the token satisfies the property. Can we write a more generic function? This function would be such that it takes in another function which checks for some property of the string and returns a parser which recongnises the tokens possessing that property. Let's do this,
+
+pSat :: (String -> Bool) -> parser String
+pSat fn [] = []
+pSat fn (tok:toks) = if (fn toks) then [(tok,toks)] else []    
+
+Here "sat" means "satisfies". fn decides what kind of values you want your parser to recognize. Let's now try and write pLit in terms if pSat. Check this out,
+
+pLit str = pSat (==str)
+
+Makes sense? So the function fn here is just the == operator partially applied to str. Can we now define pVar?
+
+To do this let us just consider a small set of keywords that should not be treated as variables.
+
+keywords :: [String]
+keywords = ["let","case","in","of"]
+
+What should the testing function do for the case of pVar? Yes, as you might have guessed it should consider any alphanumeric string as a variable apart from the keywords mentioned above. Let's just try and impose one more condition on variables. I say that they should not start with digits. Well...for most languages this is true so we need to take care of that while parsing. Let us now try and write the testing function.
+
+checkForKeywords :: [String] -> String -> Bool
+checkForKeywords list str = str `notElem` list && (isAlpha(str!!0))
+
+This definition ensures that str doesn't start with an alphabet and it is not a member of keywords list. Look at the power of haskell, the statements almost seem like any other simple english statement : "str `notElem` list" which means str is not an element of list.
+Finally we can write pVar now.
+
+pVar :: parser String
+pVar toks = pSat (checkForKeywords keywords) toks
+
+In this section we defined some more parsers like pThen3,pZeroOrMore, pZeroOrMoreWithSep, pSat, pVar,etc.
+
+This completes the section of making simple and elegant recursive parsers. Again I would like to mention that this was possible because of power of functional programming that we could write such efficient parsers in so less time. What are we left with is to showcase the use of these parser combinators in realizing production rules. An example would be sufficient to get you through. Also we are left with lexing which will form the last section of this paper.
